@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anime Music Quiz</title>
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --text-color: #ffffff;
+            --accent-color: #e74c3c;
+            --card-bg: #2d2d2d;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        /* Theme Selector */
+        .theme-selector {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+        }
+
+        select {
+            background: var(--card-bg);
+            color: var(--text-color);
+            border: 1px solid var(--accent-color);
+            border-radius: 5px;
+            padding: 5px;
+        }
+
+        .container { max-width: 600px; margin: 0 auto; }
+        .controls { margin: 20px 0; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+        
+        button {
+            padding: 12px 24px;
+            background: var(--accent-color);
+            border: none;
+            color: var(--text-color);
+            border-radius: 25px;
+            cursor: pointer;
+            transition: filter 0.2s;
+        }
+
+        button:hover { filter: brightness(1.2); }
+        #startBtn { margin-bottom: 20px; }
+
+        .spoiler {
+            background: var(--card-bg);
+            padding: 20px;
+            margin: 30px auto;
+            border-radius: 10px;
+            cursor: pointer;
+            max-width: 500px;
+            min-height: 60px;
+            position: relative;
+        }
+
+        #player { display: none; }
+        .countdown { height: 4px; background: #444; width: 80%; margin: 10px auto; }
+        .progress { height: 100%; background: var(--accent-color); transition: width 1s linear; }
+        .timer-text { font-size: 24px; margin: 10px 0; }
+
+        .yt-link {
+            display: none;
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .spoiler.revealed .yt-link {
+            display: block;
+        }
+
+        .yt-icon {
+            width: 24px;
+            height: 24px;
+            fill: var(--text-color);
+        }
+
+        /* Themes */
+        .theme-default {
+            --bg-color: #1a1a1a;
+            --text-color: #ffffff;
+            --accent-color: #e74c3c;
+            --card-bg: #2d2d2d;
+        }
+
+        .theme-midnight {
+            --bg-color: #0f172a;
+            --text-color: #94a3b8;
+            --accent-color: #38bdf8;
+            --card-bg: #1e293b;
+        }
+
+        .theme-forest {
+            --bg-color: #1a2f1d;
+            --text-color: #c8e6c9;
+            --accent-color: #4caf50;
+            --card-bg: #2d4b2f;
+        }
+    </style>
+</head>
+<body class="theme-default">
+    <div class="theme-selector">
+        <select onchange="setTheme(this.value)">
+            <option value="theme-default">Default</option>
+            <option value="theme-midnight">Midnight</option>
+            <option value="theme-forest">Forest</option>
+        </select>
+    </div>
+
+    <div class="container">
+        <button id="startBtn" onclick="startGame()">🎮 Start Game</button>
+        <div class="controls" style="display: none;">
+            <button onclick="handlePlayPause()">⏯ Play/Pause</button>
+            <button onclick="handlePrevious()">⏮ Previous</button>
+            <button onclick="handleNewClip()">🔀 New Clip</button>
+            <button onclick="handleNext()">⏭ Next</button>
+        </div>
+        <div class="timer-text" id="timer">10s</div>
+        <div class="countdown">
+            <div class="progress" id="progress"></div>
+        </div>
+        <div class="spoiler" onclick="revealAnswer()">
+            <div id="answer">Click to reveal answer</div>
+            <a class="yt-link" target="_blank">
+                <svg class="yt-icon" viewBox="0 0 24 24">
+                    <path d="M10,15L15.19,12L10,9V15M21.56,7.17C21.69,7.64 21.78,8.27 21.84,9.07C21.91,9.87 21.94,10.56 21.94,11.16L22,12C22,14.19 21.84,15.8 21.56,16.83C21.31,17.73 20.73,18.31 19.83,18.56C19.36,18.69 18.5,18.78 17.18,18.84C15.88,18.91 14.69,18.94 13.59,18.94L12,19C7.81,19 5.2,18.84 4.17,18.56C3.27,18.31 2.69,17.73 2.44,16.83C2.31,16.36 2.22,15.73 2.16,14.93C2.09,14.13 2.06,13.44 2.06,12.84L2,12C2,9.81 2.16,8.2 2.44,7.17C2.69,6.27 3.27,5.69 4.17,5.44C4.64,5.31 5.5,5.22 6.82,5.16C8.12,5.09 9.31,5.06 10.41,5.06L12,5C16.19,5 18.8,5.16 19.83,5.44C20.73,5.69 21.31,6.27 21.56,7.17Z"/>
+                </svg>
+            </a>
+        </div>
+        <div id="player"></div>
+    </div>
+
+    <script>
+        let player;
+        let clipTimer = null;
+        let countdownInterval;
+        const PLAYLIST_ID = 'PLjNlQ2vXx1xbt30X8TcUfNzw_akVISXEu';
+        let currentSeconds = 10;
+        let isPlaying = false;
+        let currentAnswer = '';
+        let currentStartTime = 0;
+
+        function setTheme(themeName) {
+            document.body.className = themeName;
+        }
+
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('player', {
+                height: '0',
+                width: '0',
+                playerVars: {
+                    listType: 'playlist',
+                    list: PLAYLIST_ID,
+                    shuffle: 1
+                },
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onStateChange
+                }
+            });
+        }
+
+        function startGame() {
+            document.getElementById('startBtn').style.display = 'none';
+            document.querySelector('.controls').style.display = 'flex';
+            resetTimer();
+            resetSpoiler();
+            player.playVideo();
+        }
+
+        function onPlayerReady(event) {
+            event.target.setShuffle(true);
+        }
+
+        function onStateChange(event) {
+            if (event.data === YT.PlayerState.PLAYING) {
+                isPlaying = true;
+                currentStartTime = player.getCurrentTime();
+                resetTimer();
+                startCountdown();
+                currentAnswer = parseAnimeTitle(player.getVideoData().title);
+                document.querySelector('.yt-link').href = `https://youtu.be/${player.getVideoData().video_id}`;
+            } else if (event.data === YT.PlayerState.PAUSED) {
+                isPlaying = false;
+            }
+        }
+
+        function handlePlayPause() {
+            if (!player) return;
+            if (isPlaying) {
+                player.pauseVideo();
+                clearTimers();
+            } else {
+                player.seekTo(currentStartTime);
+                player.playVideo();
+            }
+        }
+
+        function handleNewClip() {
+            if (!player) return;
+            const duration = player.getDuration();
+            currentStartTime = Math.max(0, Math.random() * (duration - 10));
+            player.seekTo(currentStartTime);
+            resetSpoiler();
+            if (!isPlaying) player.playVideo();
+        }
+
+        function handlePrevious() {
+            if (!player) return;
+            clearTimers();
+            resetSpoiler();
+            player.previousVideo();
+        }
+
+        function handleNext() {
+            if (!player) return;
+            clearTimers();
+            resetSpoiler();
+            player.nextVideo();
+        }
+
+        function startCountdown() {
+            currentSeconds = 10;
+            const progressBar = document.getElementById('progress');
+            const timerDisplay = document.getElementById('timer');
+            
+            progressBar.style.transition = 'none';
+            progressBar.style.width = '100%';
+            timerDisplay.textContent = '10s';
+            void progressBar.offsetWidth;
+            
+            progressBar.style.transition = 'width 1s linear';
+
+            countdownInterval = setInterval(() => {
+                currentSeconds--;
+                timerDisplay.textContent = `${currentSeconds}s`;
+                progressBar.style.width = `${(currentSeconds/10)*100}%`;
+
+                if (currentSeconds <= 0) {
+                    clearInterval(countdownInterval);
+                    player.pauseVideo();
+                    isPlaying = false;
+                }
+            }, 1000);
+
+            clipTimer = setTimeout(() => {
+                player.pauseVideo();
+                isPlaying = false;
+            }, 10000);
+        }
+
+        function clearTimers() {
+            clearTimeout(clipTimer);
+            clearInterval(countdownInterval);
+            const progressBar = document.getElementById('progress');
+            progressBar.style.transition = 'none';
+            progressBar.style.width = '100%';
+            document.getElementById('timer').textContent = '10s';
+            void progressBar.offsetWidth;
+            progressBar.style.transition = 'width 1s linear';
+        }
+
+        function resetTimer() {
+            clearTimers();
+            currentSeconds = 10;
+        }
+
+        function revealAnswer() {
+            const answerElement = document.getElementById('answer');
+            if (answerElement.textContent === 'Click to reveal answer') {
+                answerElement.textContent = currentAnswer || 'Could not detect anime';
+                answerElement.style.opacity = '1';
+                document.querySelector('.spoiler').classList.add('revealed');
+            }
+        }
+
+        function resetSpoiler() {
+            const answerElement = document.getElementById('answer');
+            answerElement.textContent = 'Click to reveal answer';
+            answerElement.style.opacity = '0';
+            document.querySelector('.spoiler').classList.remove('revealed');
+        }
+
+        function parseAnimeTitle(title) {
+            const patterns = [
+                /^(.*?)\s[-–—]/i,
+                /(.*?)\s[(（][^)]*(OP|ED|OST)/i,
+                /(?:OP|ED|OST)\s(?:from|of)\s(.*)/i,
+                /(.*?)\s(?:Full|TV Size|Extended)/i,
+                /(.*?)\s-\s(?:Opening|Ending)/i
+            ];
+            
+            for (const pattern of patterns) {
+                const match = title.match(pattern);
+                if (match && match[1]) return match[1].trim();
+            }
+            return title.split(/[-–—(（]/)[0].trim();
+        }
+
+        const tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        document.head.appendChild(tag);
+    </script>
+</body>
+</html>
