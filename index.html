@@ -88,43 +88,43 @@
         }
 
         /* Themes */
-        .theme-Dark-Green {
+        .theme-dark-matcha {
             --bg-color: #1a1a1a;
             --text-color: #ffffff;
             --accent-color: #74aa7a;
             --card-bg: #2d2d2d;
         }
 
-        .theme-Light-Green {
-            --bg-color: #0f172a;
+        .theme-light-matcha {
+            --bg-color: #ffffff;
             --text-color: #ffffff;
-            --accent-color: #38bdf8;
+            --accent-color: #8ba888;
             --card-bg: #1e293b;
         }
 
-        .theme-forest {
-            --bg-color: #1a2f1d;
-            --text-color: #c8e6c9;
-            --accent-color: #4caf50;
-            --card-bg: #2d4b2f;
+        .theme-strawberry-matcha {
+            --bg-color: #ffffff;
+            --text-color: #fecdcd;
+            --accent-color: #8ba888;
+            --card-bg: #1e293b;
         }
     </style>
 </head>
-<body class="theme-Dark-Green">
+<body class="theme-dark-matcha">
     <div class="theme-selector">
         <select onchange="setTheme(this.value)">
-            <option value="theme-Dark-Green">Dark-Green</option>
-            <option value="theme-Light-Green">Light-Green</option>
-            <option value="theme-forest">Forest</option>
+            <option value="theme-dark-matcha">dark-matcha</option>
+            <option value="theme-light-matcha">light-matcha</option>
+            <option value="theme-strawberry-matcha">strawberry-matcha</option>
         </select>
     </div>
 
     <div class="container">
-        <button id="startBtn" onclick="startGame()">🎮 Start Game</button>
+        <button id="startBtn" onclick="startGame()">Start Game</button>
         <div class="controls" style="display: none;">
             <button onclick="handlePlayPause()">⏯ Play/Pause</button>
             <button onclick="handlePrevious()">⏮ Previous</button>
-            <button onclick="handleNewClip()">🔀 New Clip</button>
+            <button onclick="handleNewClip()">New 10s Clip</button>
             <button onclick="handleNext()">⏭ Next</button>
         </div>
         <div class="timer-text" id="timer">10s</div>
