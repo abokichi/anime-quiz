@@ -20,13 +20,55 @@
             padding: 20px;
             text-align: center;
             transition: all 0.3s ease;
+            min-height: 100vh;
         }
 
-        /* Theme Selector */
         .theme-selector {
             position: fixed;
             top: 20px;
             right: 20px;
+            z-index: 100;
+        }
+
+        .mode-selector-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            padding: 8px 16px;
+            background: var(--accent-color);
+            border: none;
+            color: var(--text-color);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: filter 0.2s;
+        }
+
+        .volume-container {
+            position: fixed;
+            top: 27px;
+            right: 180px;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .volume-slider {
+            width: 100px;
+            height: 4px;
+            -webkit-appearance: none;
+            background: var(--card-bg);
+            border-radius: 2px;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            background: var(--accent-color);
+            border-radius: 50%;
+            cursor: pointer;
         }
 
         select {
@@ -35,10 +77,48 @@
             border: 1px solid var(--accent-color);
             border-radius: 5px;
             padding: 5px;
+            min-width: 150px;
         }
 
-        .container { max-width: 600px; margin: 0 auto; }
-        .controls { margin: 20px 0; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+        .start-screen {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 400px;
+            margin: 15vh auto 0;
+        }
+
+        .mode-btn {
+            padding: 15px 30px;
+            background: var(--accent-color);
+            border: none;
+            color: var(--text-color);
+            border-radius: 25px;
+            cursor: pointer;
+            transition: filter 0.2s;
+            font-size: 1.1em;
+            margin: 10px 0;
+            width: 200px;
+            align-self: center;
+        }
+
+        .mode-btn:hover {
+            filter: brightness(1.2);
+        }
+
+        .container { 
+            max-width: 600px; 
+            margin: 60px auto 0;
+            display: none;
+        }
+        
+        .controls { 
+            margin: 20px 0; 
+            display: flex; 
+            gap: 10px; 
+            justify-content: center; 
+            flex-wrap: wrap; 
+        }
         
         button {
             padding: 12px 24px;
@@ -48,10 +128,10 @@
             border-radius: 25px;
             cursor: pointer;
             transition: filter 0.2s;
+            font-size: 0.9em;
         }
 
         button:hover { filter: brightness(1.2); }
-        #startBtn { margin-bottom: 20px; }
 
         .spoiler {
             background: var(--card-bg);
@@ -62,12 +142,32 @@
             max-width: 500px;
             min-height: 60px;
             position: relative;
+            transition: transform 0.2s;
+        }
+
+        .spoiler:hover {
+            transform: scale(1.02);
         }
 
         #player { display: none; }
-        .countdown { height: 4px; background: #444; width: 80%; margin: 10px auto; }
-        .progress { height: 100%; background: var(--accent-color); transition: width 1s linear; }
-        .timer-text { font-size: 24px; margin: 10px 0; }
+        .countdown { 
+            height: 4px; 
+            background: #444; 
+            width: 80%; 
+            margin: 10px auto; 
+            border-radius: 2px;
+        }
+        .progress { 
+            height: 100%; 
+            background: var(--accent-color); 
+            transition: width 1s linear; 
+            border-radius: 2px;
+        }
+        .timer-text { 
+            font-size: 24px; 
+            margin: 10px 0; 
+            letter-spacing: 1px;
+        }
 
         .yt-link {
             display: none;
@@ -87,7 +187,6 @@
             fill: var(--text-color);
         }
 
-        /* Themes */
         .theme-dark-matcha {
             --bg-color: #1a1a1a;
             --text-color: #ffffff;
@@ -111,6 +210,14 @@
     </style>
 </head>
 <body class="theme-dark-matcha">
+    <button class="mode-selector-btn" onclick="location.reload()">Select Mode</button>
+    <div class="volume-container">
+        <svg class="yt-icon" viewBox="0 0 24 24" style="width:20px;height:20px;">
+            <path fill="currentColor" d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.84 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.76 16.5,12M3,9V15H7L12,20V4L7,9H3Z"/>
+        </svg>
+        <input type="range" class="volume-slider" min="0" max="100" value="100" oninput="setVolume(this.value)">
+    </div>
+
     <div class="theme-selector">
         <select onchange="setTheme(this.value)">
             <option value="theme-dark-matcha">dark-matcha</option>
@@ -119,10 +226,16 @@
         </select>
     </div>
 
+    <div class="start-screen">
+        <h1>Anime Music Quiz</h1>
+        <button class="mode-btn" onclick="initGame('openings')">🎵 Openings</button>
+        <button class="mode-btn" onclick="initGame('endings')">🎶 Endings</button>
+        <button class="mode-btn" onclick="initGame('osts')">🎹 OSTs</button>
+    </div>
+
     <div class="container">
-        <button id="startBtn" onclick="startGame()">Start Game</button>
-        <div class="controls" style="display: none;">
-            <button onclick="handlePlayPause()">⏯ Play/Pause</button>
+        <div class="controls">
+            <button onclick="togglePlayPause()">⏯ Play/Pause</button>
             <button onclick="handlePrevious()">⏮ Previous</button>
             <button onclick="handleNewClip()">New 10s Clip</button>
             <button onclick="handleNext()">⏭ Next</button>
@@ -144,16 +257,33 @@
 
     <script>
         let player;
-        let clipTimer = null;
+        let currentMode = null;
         let countdownInterval;
-        const PLAYLIST_ID = 'PLjNlQ2vXx1xbt30X8TcUfNzw_akVISXEu';
         let currentSeconds = 10;
-        let isPlaying = false;
+        let isPlayerReady = false;
         let currentAnswer = '';
-        let currentStartTime = 0;
+
+        const PLAYLISTS = {
+            openings: 'PLjNlQ2vXx1xbt30X8TcUfNzw_akVISXEu',
+            endings: 'PLRRF_S2yR0DcKGaHhUuDvcPIYX7XPQr89',
+            osts: 'PLvpJuQwm0QUxu2S1_qa273S7xGVPHF0O4'
+        };
 
         function setTheme(themeName) {
             document.body.className = themeName;
+        }
+
+        function initGame(mode) {
+            currentMode = mode;
+            document.querySelector('.start-screen').style.display = 'none';
+            document.querySelector('.container').style.display = 'block';
+            initializePlayer();
+        }
+
+        function initializePlayer() {
+            const tag = document.createElement('script');
+            tag.src = "https://www.youtube.com/iframe_api";
+            document.head.appendChild(tag);
         }
 
         function onYouTubeIframeAPIReady() {
@@ -162,7 +292,7 @@
                 width: '0',
                 playerVars: {
                     listType: 'playlist',
-                    list: PLAYLIST_ID,
+                    list: PLAYLISTS[currentMode],
                     shuffle: 1
                 },
                 events: {
@@ -172,146 +302,106 @@
             });
         }
 
-        function startGame() {
-            document.getElementById('startBtn').style.display = 'none';
-            document.querySelector('.controls').style.display = 'flex';
-            resetTimer();
-            resetSpoiler();
-            player.playVideo();
-        }
-
         function onPlayerReady(event) {
+            isPlayerReady = true;
             event.target.setShuffle(true);
+            event.target.playVideo();
+            event.target.setVolume(100);
         }
 
         function onStateChange(event) {
+            resetGameState();
+            
             if (event.data === YT.PlayerState.PLAYING) {
-                isPlaying = true;
-                currentStartTime = player.getCurrentTime();
-                resetTimer();
+                currentAnswer = parseAnimeTitle(event.target.getVideoData().title);
+                document.querySelector('.yt-link').href = `https://youtu.be/${event.target.getVideoData().video_id}`;
                 startCountdown();
-                currentAnswer = parseAnimeTitle(player.getVideoData().title);
-                document.querySelector('.yt-link').href = `https://youtu.be/${player.getVideoData().video_id}`;
-            } else if (event.data === YT.PlayerState.PAUSED) {
-                isPlaying = false;
             }
         }
 
-        function handlePlayPause() {
-            if (!player) return;
-            if (isPlaying) {
+        function togglePlayPause() {
+            if (!isPlayerReady) return;
+            
+            if (player.getPlayerState() === YT.PlayerState.PLAYING) {
                 player.pauseVideo();
-                clearTimers();
             } else {
-                player.seekTo(currentStartTime);
                 player.playVideo();
             }
         }
 
-        function handleNewClip() {
-            if (!player) return;
-            const duration = player.getDuration();
-            currentStartTime = Math.max(0, Math.random() * (duration - 10));
-            player.seekTo(currentStartTime);
-            resetSpoiler();
-            if (!isPlaying) player.playVideo();
-        }
-
         function handlePrevious() {
-            if (!player) return;
-            clearTimers();
-            resetSpoiler();
+            if (!isPlayerReady) return;
             player.previousVideo();
         }
 
         function handleNext() {
-            if (!player) return;
-            clearTimers();
-            resetSpoiler();
+            if (!isPlayerReady) return;
             player.nextVideo();
         }
 
-        function startCountdown() {
-            currentSeconds = 10;
-            const progressBar = document.getElementById('progress');
-            const timerDisplay = document.getElementById('timer');
+        function handleNewClip() {
+            if (!isPlayerReady) return;
             
-            progressBar.style.transition = 'none';
-            progressBar.style.width = '100%';
-            timerDisplay.textContent = '10s';
-            void progressBar.offsetWidth;
-            
-            progressBar.style.transition = 'width 1s linear';
+            const duration = player.getDuration();
+            if (duration > 10) {
+                const newTime = Math.random() * (duration - 10);
+                player.seekTo(newTime, true);
+                player.playVideo();
+            }
+        }
 
+        function startCountdown() {
+            clearInterval(countdownInterval);
+            currentSeconds = 10;
+            updateTimerDisplay();
+            
             countdownInterval = setInterval(() => {
                 currentSeconds--;
-                timerDisplay.textContent = `${currentSeconds}s`;
-                progressBar.style.width = `${(currentSeconds/10)*100}%`;
-
+                updateTimerDisplay();
+                
                 if (currentSeconds <= 0) {
                     clearInterval(countdownInterval);
                     player.pauseVideo();
-                    isPlaying = false;
                 }
             }, 1000);
-
-            clipTimer = setTimeout(() => {
-                player.pauseVideo();
-                isPlaying = false;
-            }, 10000);
         }
 
-        function clearTimers() {
-            clearTimeout(clipTimer);
+        function updateTimerDisplay() {
+            document.getElementById('timer').textContent = `${currentSeconds}s`;
+            document.getElementById('progress').style.width = `${(currentSeconds / 10) * 100}%`;
+        }
+
+        function resetGameState() {
             clearInterval(countdownInterval);
-            const progressBar = document.getElementById('progress');
-            progressBar.style.transition = 'none';
-            progressBar.style.width = '100%';
-            document.getElementById('timer').textContent = '10s';
-            void progressBar.offsetWidth;
-            progressBar.style.transition = 'width 1s linear';
+            currentSeconds = 10;
+            updateTimerDisplay();
+            resetSpoiler();
         }
 
-        function resetTimer() {
-            clearTimers();
-            currentSeconds = 10;
+        function parseAnimeTitle(title) {
+            return title
+                .replace(/[\(\[](?:OP|ED|Opening|Ending).*[\)\]]/gi, '')
+                .trim()
+                .replace(/\s+/g, ' ');
         }
 
         function revealAnswer() {
-            const answerElement = document.getElementById('answer');
-            if (answerElement.textContent === 'Click to reveal answer') {
-                answerElement.textContent = currentAnswer || 'Could not detect anime';
-                answerElement.style.opacity = '1';
-                document.querySelector('.spoiler').classList.add('revealed');
+            const spoiler = document.querySelector('.spoiler');
+            if (!spoiler.classList.contains('revealed')) {
+                spoiler.classList.add('revealed');
+                document.getElementById('answer').textContent = currentAnswer;
             }
         }
 
         function resetSpoiler() {
-            const answerElement = document.getElementById('answer');
-            answerElement.textContent = 'Click to reveal answer';
-            answerElement.style.opacity = '0';
-            document.querySelector('.spoiler').classList.remove('revealed');
+            const spoiler = document.querySelector('.spoiler');
+            spoiler.classList.remove('revealed');
+            document.getElementById('answer').textContent = 'Click to reveal answer';
         }
 
-        function parseAnimeTitle(title) {
-            const patterns = [
-                /^(.*?)\s[-–—]/i,
-                /(.*?)\s[(（][^)]*(OP|ED|OST)/i,
-                /(?:OP|ED|OST)\s(?:from|of)\s(.*)/i,
-                /(.*?)\s(?:Full|TV Size|Extended)/i,
-                /(.*?)\s-\s(?:Opening|Ending)/i
-            ];
-            
-            for (const pattern of patterns) {
-                const match = title.match(pattern);
-                if (match && match[1]) return match[1].trim();
-            }
-            return title.split(/[-–—(（]/)[0].trim();
+        function setVolume(level) {
+            if(player) player.setVolume(level);
         }
-
-        const tag = document.createElement('script');
-        tag.src = "https://www.youtube.com/iframe_api";
-        document.head.appendChild(tag);
     </script>
 </body>
 </html>
